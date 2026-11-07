@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Salesperson under the product name, inside the receipt layout table -->
+    <t t-name="pos_salesperson_receipt_layout.ReceiptLineExtra" t-inherit="pos_receipt_layout.ReceiptLineExtra" t-inherit-mode="extension">
+        <xpath expr="." position="inside">
+            <div t-if="line.config.active_salesperson_feature and line.salesperson_id"
+                 class="o_pos_salesperson_name fst-italic" style="font-size: 85%;">
+                <i class="fa fa-user me-1" role="img" aria-label="Salesperson" title="Salesperson"/>
+                <t t-esc="line.salesperson_id.name"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
