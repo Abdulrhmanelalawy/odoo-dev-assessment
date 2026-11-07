@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_salesperson_assignment.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <!-- Salesperson name directly under the product name (product screen and receipt) -->
+        <xpath expr="//small[hasclass('attribute-line')]" position="after">
+            <div t-if="showSalespersonName" class="o_pos_salesperson_name text-muted fst-italic"
+                 t-att-style="vals.isReceipt ? 'font-size: 85%;' : ''">
+                <i class="fa fa-user me-1" role="img" aria-label="Salesperson" title="Salesperson"/>
+                <t t-esc="line.salesperson_id.name"/>
+            </div>
+        </xpath>
+        <!-- Per-line assignment icon (product screen only) -->
+        <xpath expr="//div[hasclass('product-name')]" position="after">
+            <button t-if="showSalespersonButton" type="button"
+                    class="btn btn-link o_pos_assign_salesperson px-2 py-0 align-self-center"
+                    t-att-class="{'text-primary': line.salesperson_id, 'text-muted': !line.salesperson_id}"
+                    title="Assign a salesperson to this line" aria-label="Assign a salesperson to this line"
+                    t-on-pointerdown.stop="() => {}" t-on-pointerup.stop="() => {}"
+                    t-on-click.stop="onClickAssignSalesperson">
+                <i class="fa fa-user-plus"/>
+            </button>
+        </xpath>
+    </t>
+</templates>

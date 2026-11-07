@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_salesperson_assignment.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <!-- Main action bar (large screens) -->
+        <xpath expr="//InternalNoteButton/.." position="after">
+            <button t-if="pos.config.active_salesperson_feature and !props.showRemainingButtons and !ui.isSmall"
+                    class="btn btn-secondary btn-lg flex-shrink-0 o_pos_assign_salesperson_order"
+                    t-att-disabled="!currentOrder or currentOrder.isEmpty()"
+                    t-on-click="() => this.clickAssignSalespersonToOrder()">
+                <i class="fa fa-users me-1" role="img" aria-label="Salesperson"/>
+                Salesperson
+            </button>
+        </xpath>
+        <!-- "More" dialog (also the only place on small screens) -->
+        <xpath expr="//div[hasclass('control-buttons-modal')]" position="inside">
+            <button t-if="pos.config.active_salesperson_feature" t-att-class="buttonClass"
+                    class="o_pos_assign_salesperson_order"
+                    t-on-click="() => this.clickAssignSalespersonToOrder()">
+                <i class="fa fa-users me-1" role="img" aria-label="Salesperson"/>
+                Assign Salesperson to Order
+            </button>
+        </xpath>
+    </t>
+</templates>
