@@ -1,0 +1,46 @@
+// Optional styling of the enhanced receipt elements (only present when use_customized_receipt).
+.pos-receipt {
+    .o_pos_receipt_layout_company_name {
+        font-size: 1.15em;
+        font-weight: bold;
+        line-height: 1.2;
+    }
+
+    .o_pos_receipt_layout_company_details {
+        font-size: 80%;
+        line-height: 1.25;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    table.o_pos_receipt_layout_lines {
+        border-collapse: collapse;
+        margin-top: 0.5rem;
+        font-size: 85%;
+
+        th {
+            border-top: 1px solid currentColor;
+            border-bottom: 1px solid currentColor;
+            padding: 2px 3px;
+            font-weight: bold;
+        }
+
+        td {
+            padding: 2px 3px;
+            vertical-align: top;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+        }
+
+        tr.o_pos_receipt_layout_combo_item td.o_pos_receipt_layout_product {
+            padding-left: 12px;
+            font-style: italic;
+        }
+
+        .o_pos_receipt_layout_discount,
+        .o_pos_receipt_layout_note {
+            font-size: 85%;
+        }
+    }
+}

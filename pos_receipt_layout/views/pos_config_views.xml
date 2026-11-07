@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_config_view_form_receipt_layout" model="ir.ui.view">
+        <field name="name">pos.config.form.receipt.layout</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <div class="row mt16 o_settings_container" id="receipt_layout_settings"
+                     invisible="context.get('pos_config_create_mode', False)">
+                    <setting string="Receipt Layout"
+                             help="Logo, company name and details, customer details and a table of order lines">
+                        <field name="use_customized_receipt"/>
+                        <div class="content-group mt16" invisible="not use_customized_receipt">
+                            <div class="row">
+                                <label for="receipt_logo" class="col-lg-4 o_light_label"/>
+                                <field name="receipt_logo" widget="image" class="col-lg-8" options="{'size': [0, 90]}"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="company_name" class="col-lg-4 o_light_label"/>
+                                <field name="company_name" class="col-lg-8" placeholder="e.g. &lt;b&gt;My Shop&lt;/b&gt;"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="company_details" class="col-lg-4 o_light_label"/>
+                                <field name="company_details" class="col-lg-8" placeholder="Address, phone, VAT..."/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="show_customer_details" class="col-lg-4 o_light_label"/>
+                                <field name="show_customer_details" class="col-lg-8"/>
+                            </div>
+                        </div>
+                    </setting>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

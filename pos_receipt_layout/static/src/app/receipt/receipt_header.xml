@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_receipt_layout.ReceiptHeader" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
+        <!-- Logo first (the image itself is switched in PosConfig.receiptCompanyLogoUrl),
+             then the company name and details of the layout, before the standard receipt details. -->
+        <xpath expr="//img[hasclass('pos-receipt-logo')]" position="after">
+            <div t-if="isCustomizedReceipt and (customCompanyName or customCompanyDetails)"
+                 class="o_pos_receipt_layout_company text-center pt-2">
+                <div t-if="customCompanyName" class="o_pos_receipt_layout_company_name" t-out="customCompanyName"/>
+                <div t-if="customCompanyDetails" class="o_pos_receipt_layout_company_details" t-out="customCompanyDetails"/>
+            </div>
+        </xpath>
+        <!-- Customer block: standard behaviour, or driven by show_customer_details -->
+        <xpath expr="//div[hasclass('pos-receipt-customer')]" position="attributes">
+            <attribute name="t-if">showCustomerDetails</attribute>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_receipt_layout.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <!-- Standard list rendering only when the receipt layout is disabled -->
+        <xpath expr="//OrderDisplay" position="attributes">
+            <attribute name="t-if">!isCustomizedReceipt</attribute>
+        </xpath>
+        <xpath expr="//OrderDisplay" position="before">
+            <table t-if="isCustomizedReceipt" class="o_pos_receipt_layout_lines w-100">
+                <thead>
+                    <tr>
+                        <th class="text-start">Product</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="customReceiptLines" t-as="line" t-key="line.uuid"
+                        class="o_pos_receipt_layout_line" t-att-class="{'o_pos_receipt_layout_combo_item': line.combo_parent_id}">
+                        <td class="text-start o_pos_receipt_layout_product">
+                            <div class="product-name" t-esc="line.full_product_name"/>
+                            <div t-if="customReceiptDiscount(line)" class="o_pos_receipt_layout_discount">
+                                <t t-esc="customReceiptDiscount(line)"/>% discount
+                            </div>
+                            <div t-if="line.customer_note" class="o_pos_receipt_layout_note fst-italic" t-esc="line.customer_note"/>
+                            <!-- Extension point: other modules can add per-line information here
+                                 by inheriting pos_receipt_layout.ReceiptLineExtra -->
+                            <t t-call="pos_receipt_layout.ReceiptLineExtra"/>
+                        </td>
+                        <td class="text-end text-nowrap" t-esc="customReceiptQty(line)"/>
+                        <td class="text-end text-nowrap font-monospace">
+                            <t t-if="!line.combo_parent_id" t-esc="line.currencyDisplayPriceUnit"/>
+                        </td>
+                        <td class="text-end text-nowrap font-monospace">
+                            <t t-if="!line.combo_parent_id" t-esc="line.currencyDisplayPrice"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div t-if="isCustomizedReceipt and order.general_customer_note" class="o_pos_receipt_layout_note pt-1 text-break"
+                 t-esc="order.general_customer_note"/>
+        </xpath>
+    </t>
+
+    <!-- Per-line extension point of the receipt layout table (empty by default). -->
+    <t t-name="pos_receipt_layout.ReceiptLineExtra"/>
+</templates>
