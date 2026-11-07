@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Demo data is generated in Python (see models/trial_balance_demo_data.py) because account
+         codes are company dependent and entries need the company's chart of accounts. -->
+    <function model="dynamic.trial.balance.engine" name="_load_demo_data"/>
+</odoo>

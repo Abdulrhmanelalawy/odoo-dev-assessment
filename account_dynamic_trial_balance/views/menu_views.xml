@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- account.group_account_manager does not imply group_account_readonly in Odoo 19,
+         so the three accounting profiles are listed explicitly. -->
+    <menuitem id="menu_account_dynamic_trial_balance"
+              name="Dynamic Trial Balance"
+              parent="account.menu_finance_reports"
+              action="action_dynamic_trial_balance_wizard"
+              groups="account.group_account_readonly,account.group_account_basic,account.group_account_manager"
+              sequence="5"/>
+</odoo>

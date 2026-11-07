@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- On-screen report: option bar on top, then the trial balance table (fold groups, click an
+         account to open its journal items). Rendered by TrialBalancePreview (trial_balance_preview.js). -->
+    <t t-name="account_dynamic_trial_balance.TrialBalancePreview">
+        <div class="o_action o_dynamic_trial_balance d-flex flex-column h-100">
+            <!-- Control panel -->
+            <div class="o_control_panel d-flex flex-column gap-2 px-3 pt-2 pb-2 border-bottom">
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <span class="fs-4 me-3">Dynamic Trial Balance</span>
+                    <button class="btn btn-primary" t-on-click="() => this.export('action_pdf')">PDF</button>
+                    <button class="btn btn-secondary" t-on-click="() => this.export('action_xlsx')">XLSX</button>
+                    <div class="ms-auto o_dtb_search">
+                        <input type="search" class="form-control" placeholder="Search account code or name..."
+                               t-att-value="state.search" t-on-input="onSearch"/>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center flex-wrap gap-3 small">
+                    <div class="d-flex align-items-center gap-1">
+                        <span>From</span>
+                        <input type="date" class="form-control form-control-sm w-auto"
+                               t-att-value="state.options.date_from" t-on-change="(ev) => this.setDate('date_from', ev)"/>
+                        <span>to</span>
+                        <input type="date" class="form-control form-control-sm w-auto"
+                               t-att-value="state.options.date_to" t-on-change="(ev) => this.setDate('date_to', ev)"/>
+                    </div>
+                    <t t-foreach="[
+                        ['include_unposted', 'Unposted Entries'],
+                        ['hierarchy', 'Hierarchy and Subtotals'],
+                        ['only_parents', 'Only Parents'],
+                        ['skip_zero_balance', 'Skip Zero Balance'],
+                        ['show_amount_currency', 'Amount Currency'],
+                    ]" t-as="opt" t-key="opt[0]">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" t-att-id="'dtb_' + opt[0]"
+                                   t-att-checked="state.options[opt[0]]" t-on-change="() => this.toggleOption(opt[0])"/>
+                            <label class="form-check-label" t-att-for="'dtb_' + opt[0]" t-out="opt[1]"/>
+                        </div>
+                    </t>
+                    <div t-if="state.options.only_parents" class="d-flex align-items-center gap-1">
+                        <span>Level up to</span>
+                        <select class="form-select form-select-sm w-auto" t-on-change="setLevel">
+                            <t t-foreach="[1, 2, 3, 4, 5]" t-as="lvl" t-key="lvl">
+                                <option t-att-value="lvl" t-att-selected="lvl === state.options.account_level" t-out="lvl"/>
+                            </t>
+                        </select>
+                    </div>
+                </div>
+                <div t-if="filterBadges.length" class="d-flex flex-wrap gap-1">
+                    <span t-foreach="filterBadges" t-as="badge" t-key="badge_index" class="badge text-bg-light border" t-out="badge"/>
+                </div>
+            </div>
+
+            <!-- Report -->
+            <div class="o_content flex-grow-1 overflow-auto px-3 py-2" t-att-class="{'opacity-50': state.loading}">
+                <t t-if="state.data">
+                    <div class="text-muted small mb-2">
+                        <t t-out="state.data.header.company_name"/> ·
+                        <t t-out="state.data.header.date_from"/> → <t t-out="state.data.header.date_to"/>
+                    </div>
+                    <table class="table table-sm table-hover o_dtb_table">
+                        <thead class="sticky-top bg-body">
+                            <tr>
+                                <th t-att-colspan="showCurrency ? 3 : 2"/>
+                                <th t-foreach="sections" t-as="section" t-key="section.key" colspan="3"
+                                    class="text-center border-start" t-out="section.label"/>
+                            </tr>
+                            <tr>
+                                <th>Code</th>
+                                <th>Account</th>
+                                <th t-if="showCurrency" class="text-end">Amount Currency</th>
+                                <t t-foreach="sections" t-as="section" t-key="section.key">
+                                    <th class="text-end border-start">Debit</th>
+                                    <th class="text-end">Credit</th>
+                                    <th class="text-end">Balance</th>
+                                </t>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="visibleLines" t-as="line" t-key="line.id" t-att-class="lineClass(line)"
+                                t-on-click="() => line.type === 'group' ? this.toggleFold(line) : this.openJournalItems(line)">
+                                <td class="text-nowrap" t-att-style="indent(line)">
+                                    <i t-if="line.type === 'group' and !state.options.only_parents"
+                                       t-att-class="state.folded.has(line.id) ? 'fa fa-caret-right me-1' : 'fa fa-caret-down me-1'"/>
+                                    <t t-out="line.code"/>
+                                </td>
+                                <td t-out="line.name"/>
+                                <td t-if="showCurrency" class="text-end text-nowrap" t-out="formatAmountCurrency(line)"/>
+                                <t t-foreach="sections" t-as="section" t-key="section.key">
+                                    <td class="text-end text-nowrap border-start" t-out="formatAmount(line[section.key + '_debit'])"/>
+                                    <td class="text-end text-nowrap" t-out="formatAmount(line[section.key + '_credit'])"/>
+                                    <td class="text-end text-nowrap" t-out="formatAmount(line[section.key + '_balance'])"/>
+                                </t>
+                            </tr>
+                            <tr t-if="!visibleLines.length">
+                                <td t-att-colspan="showCurrency ? 12 : 11" class="text-center text-muted py-4">
+                                    No account matches the current filters.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="o_dtb_total fw-bold border-top border-2">
+                                <td/>
+                                <td t-out="state.data.total.name"/>
+                                <td t-if="showCurrency"/>
+                                <t t-foreach="sections" t-as="section" t-key="section.key">
+                                    <td class="text-end text-nowrap border-start" t-out="formatAmount(state.data.total[section.key + '_debit'])"/>
+                                    <td class="text-end text-nowrap" t-out="formatAmount(state.data.total[section.key + '_credit'])"/>
+                                    <td class="text-end text-nowrap" t-out="formatAmount(state.data.total[section.key + '_balance'])"/>
+                                </t>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

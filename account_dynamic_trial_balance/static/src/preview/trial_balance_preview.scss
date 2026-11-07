@@ -1,0 +1,23 @@
+// Styles of the on-screen Dynamic Trial Balance (client action "account_dynamic_trial_balance.preview").
+.o_dynamic_trial_balance {
+    .o_dtb_search {
+        min-width: 260px;
+    }
+
+    .o_dtb_table {
+        font-variant-numeric: tabular-nums;
+
+        tr.o_dtb_group {
+            cursor: pointer;
+            background-color: rgba(var(--bs-secondary-rgb), 0.06);
+        }
+
+        tr.o_dtb_account {
+            cursor: pointer;
+        }
+
+        tr.o_dtb_total td {
+            border-top-width: 2px;
+        }
+    }
+}

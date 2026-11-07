@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dynamic_tb_wizard_readonly,dynamic.trial.balance.wizard readonly,model_dynamic_trial_balance_wizard,account.group_account_readonly,1,1,1,1
+access_dynamic_tb_wizard_basic,dynamic.trial.balance.wizard basic,model_dynamic_trial_balance_wizard,account.group_account_basic,1,1,1,1
+access_dynamic_tb_wizard_manager,dynamic.trial.balance.wizard manager,model_dynamic_trial_balance_wizard,account.group_account_manager,1,1,1,1
+access_dynamic_tb_prefix_readonly,dynamic.trial.balance.prefix readonly,model_dynamic_trial_balance_prefix,account.group_account_readonly,1,1,1,0
+access_dynamic_tb_prefix_basic,dynamic.trial.balance.prefix basic,model_dynamic_trial_balance_prefix,account.group_account_basic,1,1,1,0
+access_dynamic_tb_prefix_manager,dynamic.trial.balance.prefix manager,model_dynamic_trial_balance_prefix,account.group_account_manager,1,1,1,1

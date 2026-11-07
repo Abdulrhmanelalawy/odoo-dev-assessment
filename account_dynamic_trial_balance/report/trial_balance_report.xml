@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- No letter-head header (it overlapped the report): the title block is in the page and
+         a one-line footer (company / print date / page x of y) repeats on every page. -->
+    <record id="paperformat_trial_balance" model="report.paperformat">
+        <field name="name">Dynamic Trial Balance (A4 landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">10</field>
+        <field name="margin_bottom">14</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_trial_balance" model="ir.actions.report">
+        <field name="name">Dynamic Trial Balance</field>
+        <field name="model">dynamic.trial.balance.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">account_dynamic_trial_balance.report_trial_balance</field>
+        <field name="report_file">account_dynamic_trial_balance.report_trial_balance</field>
+        <field name="print_report_name">'Trial Balance %s - %s' % (object.date_from, object.date_to)</field>
+        <field name="paperformat_id" ref="paperformat_trial_balance"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_trial_balance_amount">
+        <td t-att-class="'num' + (' sep' if first else '')">
+            <t t-if="value or is_total" t-out="value" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+        </td>
+    </template>
+
+    <template id="report_trial_balance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="wizard">
+                <t t-set="company" t-value="wizard.company_id"/>
+                <t t-set="data" t-value="wizard.get_report_data()"/>
+                <t t-set="options" t-value="data['options']"/>
+                <t t-set="currency" t-value="company.currency_id"/>
+                <t t-call="web.basic_layout">
+                    <!-- Footer extracted by wkhtmltopdf and repeated on every page -->
+                    <!-- Plain blocks, no table: the report stylesheet boxes every table cell. -->
+                    <div class="footer" style="font-size: 9px; color: #6c757d; border-top: 1px solid #dee2e6; padding-top: 3px; overflow: hidden;">
+                        <div style="float: left; width: 33%;" t-out="company.name"/>
+                        <div style="float: left; width: 34%; text-align: center;">
+                            Printed on <t t-out="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                        </div>
+                        <div style="float: left; width: 33%; text-align: right;">
+                            Page <span class="page"/> / <span class="topage"/>
+                        </div>
+                    </div>
+                    <div class="page o_dtb_pdf">
+                        <style>
+                            /* Neutralize the report stylesheet's cell borders / weights, then style explicitly */
+                            .o_dtb_pdf table, .o_dtb_pdf thead, .o_dtb_pdf tbody, .o_dtb_pdf tr, .o_dtb_pdf th, .o_dtb_pdf td { border: 0 none !important; font-weight: normal !important; }
+                            .o_dtb_pdf { font-size: 11px; }
+                            .o_dtb_pdf h3 { margin: 0 0 2px 0; font-weight: bold; }
+                            .o_dtb_pdf .dtb_meta { margin-bottom: 2px; }
+                            .o_dtb_pdf .dtb_filters { color: #6c757d; margin-bottom: 8px; }
+                            .o_dtb_pdf table { width: 100%; border-collapse: collapse; }
+                            .o_dtb_pdf thead { display: table-header-group; }
+                            .o_dtb_pdf tr { page-break-inside: avoid; }
+                            .o_dtb_pdf th, .o_dtb_pdf td { padding: 3px 4px; vertical-align: top; }
+                            .o_dtb_pdf th { font-weight: bold !important; }
+                            .o_dtb_pdf thead tr.dtb_sections th { text-align: center; border-bottom: 1px solid #adb5bd !important; }
+                            .o_dtb_pdf thead tr.dtb_cols th { border-bottom: 2px solid #212529 !important; }
+                            .o_dtb_pdf .num { text-align: right; white-space: nowrap; }
+                            .o_dtb_pdf .sep { border-left: 1px solid #adb5bd !important; }
+                            .o_dtb_pdf tbody td { border-bottom: 1px solid #e9ecef !important; }
+                            .o_dtb_pdf tr.dtb_group td { font-weight: bold !important; background-color: #f4f5f7; }
+                            .o_dtb_pdf tr.dtb_total td { font-weight: bold !important; border-top: 2px solid #212529 !important; }
+                            .o_dtb_pdf .code { white-space: nowrap; width: 8%; }
+                            .o_dtb_pdf thead tr.dtb_sections th.blank { border-bottom: 0 none !important; }
+                            .o_dtb_pdf .dtb_meta strong { font-weight: bold; }
+                        </style>
+
+                        <h3>Trial Balance</h3>
+                        <div class="dtb_meta">
+                            <strong t-out="data['header']['company_name']"/>
+                            — From <span t-field="wizard.date_from"/> to <span t-field="wizard.date_to"/>
+                        </div>
+                        <div class="dtb_filters">
+                            <t t-if="data['header']['filters']" t-out="' · '.join(data['header']['filters'])"/>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr class="dtb_sections">
+                                    <th t-att-colspan="3 if options['show_amount_currency'] else 2" class="blank"/>
+                                    <th colspan="3" class="sep">Initial Balance</th>
+                                    <th colspan="3" class="sep">Movement</th>
+                                    <th colspan="3" class="sep">End Balance</th>
+                                </tr>
+                                <tr class="dtb_cols">
+                                    <th class="code">Code</th>
+                                    <th>Account</th>
+                                    <th t-if="options['show_amount_currency']" class="num">Amount Currency</th>
+                                    <t t-foreach="range(3)" t-as="section">
+                                        <th class="num sep">Debit</th>
+                                        <th class="num">Credit</th>
+                                        <th class="num">Balance</th>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="data['lines'] + [data['total']]" t-as="line">
+                                    <t t-set="is_total" t-value="line['type'] == 'total'"/>
+                                    <tr t-att-class="{'group': 'dtb_group', 'total': 'dtb_total'}.get(line['type'], '')">
+                                        <td class="code" t-att-style="'padding-left: %spx' % (4 + max(line['level'] - 1, 0) * 10)">
+                                            <t t-out="line['code']"/>
+                                        </td>
+                                        <td t-out="line['name']"/>
+                                        <td t-if="options['show_amount_currency']" class="num">
+                                            <t t-if="line.get('currency')" t-out="line['amount_currency']"
+                                               t-options="{'widget': 'monetary', 'display_currency': env['res.currency'].browse(line['currency']['id'])}"/>
+                                        </td>
+                                        <t t-foreach="['initial', 'period', 'end']" t-as="section">
+                                            <t t-call="account_dynamic_trial_balance.report_trial_balance_amount">
+                                                <t t-set="value" t-value="line[section + '_debit']"/>
+                                                <t t-set="first" t-value="True"/>
+                                            </t>
+                                            <t t-call="account_dynamic_trial_balance.report_trial_balance_amount">
+                                                <t t-set="value" t-value="line[section + '_credit']"/>
+                                                <t t-set="first" t-value="False"/>
+                                            </t>
+                                            <t t-call="account_dynamic_trial_balance.report_trial_balance_amount">
+                                                <t t-set="value" t-value="line[section + '_balance']"/>
+                                                <t t-set="first" t-value="False"/>
+                                            </t>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
